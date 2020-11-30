@@ -1,0 +1,142 @@
+    <div class="modal fade" id="editModelModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modificar Presupuesto</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+          <form v-on:submit.prevent="updateBudget()">
+            <div class="modal-body">
+              <div v-if="errors.length" class="alert alert-warning" role="alert">
+                  <b>Por favor corrija los siguientes errores:</b>
+                  <ul>
+                    <li v-for="error in errors">
+                      <ul>
+                        <li v-for="[key, value] in Object.entries(error)">
+                          ${key}: ${value[0]}
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="name">Título</label>
+                    <textarea 
+                      rows="4"
+                      class="form-control"
+                      name="title"
+                      placeholder="Escriba el título de la propuesta"
+                      id="title"
+                      v-model="selectedBudget.title">
+                    </textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="client">Cliente</label>
+                    <v-select 
+                      v-model="selectedClient" 
+                      :options="clientList" 
+                      label="short_name">
+                    </v-select>
+                    <!--v-select
+                      label="short_name"
+                      :options="clients_list"
+                      value="id"
+                      v-model="selectedBudget.client">
+                    </v-select-->
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="exchange_rate">Tipo de cambio</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      class="form-control"
+                      name="exchange_rate"
+                      placeholder="Tipo de cambio"
+                      v-model="selectedBudget.exchange_rate"
+                      id="exchange_rate">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>Moneda</label>
+                    <select 
+                      id="currency"
+                      name="currency"
+                      class="form-control"
+                      v-model="selectedBudget.currency"
+                      required="required">
+                      <option selected value="D">Dólares</option>
+                      <option value="S">Soles</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="deadline">F.Presentación</label>
+                    <input 
+                      type="text"
+                      class="form-control datepicker"
+                      maxlength="25"
+                      name="deadline"
+                      placeholder="aaaa-mm-dd"
+                      id="deadline"
+                      v-model="selectedBudget.deadline">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="location">Locación</label>
+                    <input
+                      type="text"
+                      maxlength="150"
+                      class="form-control"
+                      name="location"
+                      placeholder="Escriba la locación del presupuesto"
+                      id="name"
+                      v-model="selectedBudget.location">
+                  </div>
+                </div>
+              </div>
+              <button class="btn btn-link" data-target="#optionalData" type="button" data-toggle="collapse" aria-expanded="false" aria-controls="optionalData">Opcionales</button>
+              <div class="collapse optional" id=optionalData>
+                <div class="row">
+                  <div class="col-md-12">
+                    <div class="form-group">
+                      <label for="summary">Resumen</label>
+                      <textarea 
+                        rows="4"
+                        class="form-control"
+                        name="summary"
+                        placeholder="Escriba un resumen de la propuesta"
+                        id="summary"
+                        v-model="selectedBudget.summary">
+                      </textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+          </form>
+        </div>
+        </div>
+      </div>
+    </div>

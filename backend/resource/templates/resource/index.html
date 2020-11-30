@@ -1,0 +1,67 @@
+{% extends "core/base.html" %}
+
+{% load i18n staticfiles humanize thumbnail %}
+
+{% block content %}
+        <div class="div-block-7 w-clearfix">
+          <h1 class="meetingsh1">Recursos</h1>
+
+          <div class="meetingdetailcontain float-left">
+            <div class="meetingdetailtopdiv">
+              <div class="w-row">
+                <div class="w-col w-col-2">
+                  <div><img src="{{ budget.proyecto.cliente.logo|thumbnail_url:'avatar2' }}" alt="" class="meetingimgdiv"></div>
+                </div>
+                <div class="w-col w-col-10">
+                  <div class="meetingtitle"><h3>Mano de Obra</h3></div>
+                </div>
+              </div>
+            </div>
+            <div class="meetingdetailmiddlediv">
+            <a href="{% url "manpower_resource" %}" class="bottommorelink bottommoreright w-inline-block">
+              <div class="detailscallinktext">Ver Detalle</div>
+            </a>
+
+            </div>
+          </div>
+
+          <div class="meetingdetailcontain float-left">
+            <div class="meetingdetailtopdiv">
+              <div class="w-row">
+                <div class="w-col w-col-2">
+                  <div><img src="{{ budget.proyecto.cliente.logo|thumbnail_url:'avatar2' }}" alt="" class="meetingimgdiv"></div>
+                </div>
+                <div class="w-col w-col-10">
+                  <div class="meetingtitle"><h3>Material</h3></div>
+                </div>
+              </div>
+            </div>
+            <div class="meetingdetailmiddlediv">
+            <a href="{% url "material_resource" %}" class="bottommorelink bottommoreright w-inline-block">
+              <div class="detailscallinktext">Ver Detalle</div>
+            </a>
+
+            </div>
+          </div>
+
+          <div class="meetingdetailcontain float-left">
+            <div class="meetingdetailtopdiv">
+              <div class="w-row">
+                <div class="w-col w-col-2">
+                  <div><img src="{{ budget.proyecto.cliente.logo|thumbnail_url:'avatar2' }}" alt="" class="meetingimgdiv"></div>
+                </div>
+                <div class="w-col w-col-10">
+                  <div class="meetingtitle"><h3>Equipos</h3></div>
+                </div>
+              </div>
+            </div>
+            <div class="meetingdetailmiddlediv">
+            <a href="{% url "equipment_resource" %}" class="bottommorelink bottommoreright w-inline-block">
+              <div class="detailscallinktext">Ver Detalle</div>
+            </a>
+
+            </div>
+          </div>
+
+        </div>
+{% endblock %}

@@ -1,0 +1,107 @@
+<div class="modal fade" id="editModelModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modificar {{title}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form v-on:submit.prevent="updateData()">
+        <div class="modal-body">
+          <div v-if="errors.length" class="alert alert-warning" role="alert">
+              <b>Por favor corrija los siguientes errores:</b>
+              <ul>
+                <li v-for="error in errors">
+                  <ul>
+                    <li v-for="[key, value] in Object.entries(error)">
+                      $#key#: $#value[0]#
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="name">Nombre completo</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  maxlength="150"
+                  name="name"
+                  placeholder="Nombre completo"
+                  v-model="data.name"
+                  id="name"
+                  required="required">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="short_name">Nombre corto</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  maxlength="40"
+                  name="short_name"
+                  placeholder="Nombre corto"
+                  v-model="data.short_name"
+                  id="short_name"
+                  required="required">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="initials">Iniciales</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  maxlength="3"
+                  name="initials"
+                  placeholder="Iniciales"
+                  v-model="data.initials"
+                  id="initials"
+                  required="required">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="ruc">RUC</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  maxlength="11"
+                  name="ruc"
+                  placeholder="RUC"
+                  v-model="data.ruc"
+                  id="ruc">
+              </div>
+            </div>
+          </div>
+          <!--div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="logo">Logo</label>
+                <input 
+                  type="file"
+                  class="form-control"
+                  name="logo"
+                  placeholder="Logo"
+                  id="logo"
+                  v-model="data.logo">
+              </div>
+            </div>
+          </div-->
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,470 @@
+{% extends "core/base.html" %}
+
+{% load i18n staticfiles humanize thumbnail %}
+
+{% block content %}
+  <div id="app" class="div-block-7 w-clearfix">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-10">
+          <div class="topdashbartext"><h1>Recurso: Equipo</h1></div>
+        </div>
+        <div class="col-sm-2">
+          <div data-delay="0" class="w-dropdown">
+            <div class="topnamebutton w-dropdown-toggle">
+              <div class="sectiontextoption">M</div>
+            </div>
+            <nav class="dropdown-list w-dropdown-list">
+              <a href="#" class="menuoption w-dropdown-link">Link 1</a>
+              <a href="#" class="menuoption w-dropdown-link">Link 2</a>
+              <a href="#" class="menuoptionseparator menuoption w-dropdown-link">Link 3</a></nav>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    {# Grilla #}
+  <div class="bodybudget">
+    <div class="row">
+      <div class="w-row">
+        <div class="w-col w-col-6">
+          <form id="search">
+            Buscar <input name="query" v-model="searchQuery">
+          </form>
+        </div>
+        <div class="w-col w-col-6">
+          <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#addEquipmentModal">Adicionar Equipo</button>
+        </div>
+      </div>
+    </div>
+    <edit-grid
+      :data="equipments"
+      :columns="gridColumns"
+      :widths="widthColumns"
+      :filter-key="searchQuery"
+      :edit_function="getEquipment"
+      :delete_function="deleteEquipment">
+    </edit-grid>
+  </div>
+
+    {# Loader #}
+
+    <div class="loading" v-if="loading===true">Loading&#8230;</div>
+
+    {# Formulario Modal de Edición de Equipment #}
+
+    <div class="modal fade" id="editEquipmentModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Editar Equipo</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form v-on:submit.prevent="updateEquipment()">
+          <div class="modal-body">
+            <div v-if="errors.length" class="alert alert-warning" role="alert">
+                <b>Por favor corrija los siguientes errores:</b>
+                <ul>
+                  <li v-for="error in errors">
+                    <ul>
+                      <li v-for="[key, value] in Object.entries(error)">
+                        ${key}: ${value[0]}
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="Equipment_name">Código</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="Equipment_code"
+                  data-name="Equipment_code"
+                  placeholder="Código"
+                  v-model="currentEquipment.code"
+                  id="Equipment_code"
+                  autofocus>
+              </div>
+              <div class="form-group col-md-8">
+                <label for="Equipment_name">Nombre</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="Equipment_name"
+                  data-name="Equipment_name"
+                  placeholder="Nombre del equipment"
+                  v-model="currentEquipment.nombre"
+                  id="Equipment_name"
+                  required="required">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="name-2">Unidad</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="unit"
+                  data-name="unit"
+                  placeholder="Unidad"
+                  v-model="currentEquipment.unidad"
+                  id="unit">
+              </div>
+              <div class="form-group col-md-4">
+                <label>Moneda</label>
+                <select 
+                  id="moneda_equipment"
+                  name="moneda_equipment"
+                  data-name="moneda_equipment"
+                  class="w-select"
+                  v-model="currentEquipment.moneda"
+                  required="required">
+                  <option selected value="D">Dólares</option>
+                  <option value="S">Soles</option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label for="name-3">Precio</label>
+                <input 
+                  type="text"
+                  class="w-input"
+                  maxlength="25"
+                  name="precio"
+                  data-name="precio"
+                  placeholder="Precio"
+                  id="precio"
+                  v-model="currentEquipment.precio"
+                  required="required">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+            <!--div class="rowoptionsform"><input type="submit" value="Guardar" data-wait="Guardando..." class="w-button"><a href="#" class="formoptioncancel" data-dismiss="modal">Cerrar</a></div-->
+          </form>
+        </div>
+      </div>
+    </div>
+
+    {# Formulario Modal de Adicionar Equipment #}
+
+    <div class="modal fade" id="addEquipmentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Adicionar Equipment</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form v-on:submit.prevent="addEquipment()">
+          <div class="modal-body">
+            <div v-if="errors.length" class="alert alert-warning" role="alert">
+                <b>Por favor corrija los siguientes errores:</b>
+                <ul>
+                  <li v-for="error in errors">
+                    <ul>
+                      <li v-for="[key, value] in Object.entries(error)">
+                        ${key}: ${value[0]}
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="Equipment_name">Código</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="Equipment_code"
+                  data-name="Equipment_code"
+                  placeholder="Código"
+                  v-model="newEquipment.code"
+                  id="Equipment_code"
+                  autofocus>
+              </div>
+              <div class="form-group col-md-8">
+                <label for="Equipment_name">Nombre</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="Equipment_name"
+                  data-name="Equipment_name"
+                  placeholder="Nombre de la equipment"
+                  v-model="newEquipment.nombre"
+                  id="Equipment_name"
+                  required="required">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="name-2">Unidad</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="unit"
+                  data-name="unit"
+                  placeholder="Unidad"
+                  v-model="newEquipment.unidad"
+                  id="unit">
+              </div>
+              <div class="form-group col-md-4">
+                <label>Moneda</label>
+                <select 
+                  id="moneda_equipment"
+                  name="moneda_equipment"
+                  data-name="moneda_equipment"
+                  class="w-select"
+                  v-model="newEquipment.moneda"
+                  required="required">
+                  <option selected value="D">Dólares</option>
+                  <option value="S">Soles</option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label for="name-3">Precio</label>
+                <input 
+                  type="text"
+                  class="w-input"
+                  maxlength="25"
+                  name="precio"
+                  data-name="precio"
+                  placeholder="Precio"
+                  id="precio"
+                  v-model="newEquipment.precio"
+                  required="required">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+            <!--div class="rowoptionsform"><input type="submit" value="Guardar" data-wait="Guardando..." class="w-button"><a href="#" class="formoptioncancel" data-dismiss="modal">Cerrar</a></div-->
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<!-- component template -->
+
+<script type="text/x-template" id="edit-grid-template">
+<div>
+      <div class="titlebodybudget w-row rowbodybudget">
+        <div class="w-col" v-for="key in columns"
+          @click="sortBy(key)"
+          :class="[{ active: sortKey == key }, 'w-col-' + widths[columns.indexOf(key)]]">
+          ${key | capitalize}
+          <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+          </span>
+        </div>
+      </div>
+
+      <div class="itembodybudget w-row" v-for="entry in filteredData">
+        <div class='w-col' :class="'w-col-' + widths[columns.indexOf(key)]" v-for="key in columns">
+          <div>${entry[key]}</div>
+        </div>
+        <a href="#" class="inlinedescriptionoption w-inline-block" v-on:click="delete_function(entry)">
+          <div class="text-block">B</div>
+        </a>
+        <a href="#" class="inlinedescriptionoption w-inline-block" v-on:click="edit_function(entry['id'])">
+          <div class="text-block">p</div>
+        </a>
+      </div>
+</div>
+</script>
+
+<script>
+
+  var csrftoken = Cookies.get('csrftoken');
+  Vue.http.headers.common['X_CSRFTOKEN'] = csrftoken;
+
+  Vue.component('edit-grid', {
+    template: '#edit-grid-template',
+    delimiters: ['${', '}'],
+    props: {
+      data: Array,
+      columns: Array,
+      widths: Array,
+      filterKey: String,
+      edit_function: Function,
+      delete_function: Function,
+    },
+    data: function () {
+      var sortOrders = {}
+      this.columns.forEach(function (key) {
+        sortOrders[key] = 1
+      })
+      return {
+        sortKey: '',
+        sortOrders: sortOrders
+      }
+    },
+    computed: {
+      filteredData: function () {
+        var sortKey = this.sortKey
+        var filterKey = this.filterKey && this.filterKey.toLowerCase()
+        var order = this.sortOrders[sortKey] || 1
+        var data = this.data
+        if (filterKey) {
+          data = data.filter(function (row) {
+            return Object.keys(row).some(function (key) {
+              return String(row[key]).toLowerCase().indexOf(filterKey) > -1
+            })
+          })
+        }
+        if (sortKey) {
+          data = data.slice().sort(function (a, b) {
+            a = a[sortKey]
+            b = b[sortKey]
+            return (a === b ? 0 : a > b ? 1 : -1) * order
+          })
+        }
+        return data
+      }
+    },
+    filters: {
+      capitalize: function (str) {
+        return str.charAt(0).toUpperCase() + str.slice(1)
+      }
+    },
+    methods: {
+      sortBy: function (key) {
+        this.sortKey = key
+        this.sortOrders[key] = this.sortOrders[key] * -1
+      },
+    },
+  })
+
+  const new_equipment = {
+    "code": null,
+    "nombre": null,
+    "unidad": "Hr",
+    "moneda": "D",
+    "precio": "0.00",
+  }
+
+  new Vue({
+        el: '#app',
+        delimiters: ['${', '}'],
+        data: {
+          searchQuery: '',
+          gridColumns: ['code', 'nombre', 'unidad', 'moneda', 'precio'],
+          widthColumns: [1,7,1,1,1],
+          equipments: [],
+          loading: true,
+          errors: [],
+          currentEquipment: {},
+          newEquipment: new_equipment
+        },
+        mounted: function() {
+          this.getEquipments();
+        },
+        methods: {
+          padding_left: function(level){
+            return "pad_left_" + level
+          },
+          getEquipments: function() {
+            this.loading = true;
+            this.$http.get('/api/equipments/')
+                .then((response) => {
+                  this.equipments = response.data;
+                  this.loading = false;
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  console.log(err);
+                })
+          },
+          getEquipment: function(id) {
+            this.loading = true;
+            this.$http.get(`/api/equipments/${id}/`)
+                .then((response) => {
+                  this.currentEquipment = response.data;
+                  $("#editEquipmentModal").modal('show');
+                  $("#Equipment_code").focus();
+                  this.loading = false;
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  console.log(err);
+                })
+          },
+          updateEquipment: function() {
+            this.loading = true;
+            this.$http.put(`/api/equipments/${this.currentEquipment.id}/`, this.currentEquipment)
+                .then((response) => {
+                  this.loading = false;
+                  this.currentEquipment = response.data;
+                  $("#editEquipmentModal").modal('hide');
+                  this.errors = [],
+                  this.getEquipments();
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  this.errors = [],
+                  this.errors.push(err.body);
+                  console.log("error>>>", err);
+                })
+          },
+          addEquipment: function() {
+            this.loading = true;
+            this.$http.post(`/api/equipments/`,this.newEquipment)
+                .then((response) => {
+                  this.loading = false;
+                  this.errors = [],
+                  $("#addEquipmentModal").modal('hide');
+                  this.newEquipment = new_equipment,
+                  this.getEquipments();
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  this.errors = [],
+                  this.errors.push(err.body);
+                  console.log("error>>>", err);
+                })
+          },
+          deleteEquipment: function(obj) {
+                swal({
+                  title: "¿Está seguro de borrar?",
+                  text: obj.nombre + ", será borrado.",
+                  icon: "warning",
+                  buttons: ["Cancelar", "Borrar"],
+                  // button: "Borrar",
+                  dangerMode: true,
+                })
+                .then((willDelete) => {
+                  if (willDelete) {
+                    this.loading = true;
+                    this.$http.delete(`/api/equipments/${obj.id}/`)
+                        .then((response) => {
+                          this.loading = false;
+                          this.getEquipments();
+                        })
+                        .catch((err) => {
+                          this.loading = false;
+                          console.log(err);
+                        });
+                  }
+                });
+            }
+          }
+        })
+</script>
+{% endblock %}

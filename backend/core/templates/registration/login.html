@@ -1,0 +1,28 @@
+{% extends "core/base2.html" %}
+{% load i18n staticfiles thumbnail widget_tweaks %}
+
+
+{% block content %}
+       <form class="form-signin" role="form" method="post" action="{% url 'login' %}">
+      <img class="mb-4" src="{% static "core/assets/images/inmac-logo.svg" %}" alt="" width="250">
+      <h1 class="h3 mb-3 font-weight-normal">Proyecta</h1>
+        {% csrf_token %}
+
+            <div class="form-group">
+                {% render_field form.username class="form-control" placeholder=form.username.label %}
+            </div>
+            <div class="form-group">
+                {% render_field form.password class="form-control" placeholder=form.password.label %}
+            </div>
+                <button type="submit" class="btn btn-primary block full-width m-b">Ingresar</button>
+
+                <input type="hidden" name="next" value="{{ next }}" />
+
+            <a href="{% url 'password_reset' %}"><small>¿No recuerda su contraseña?</small></a>
+            <p > <small>INMAC PERÚ SAC. Todos los derechos reservados <br> &copy; 2019</small> </p>
+            </form>
+
+        </form>
+
+
+{% endblock %}

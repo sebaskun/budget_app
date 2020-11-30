@@ -1,0 +1,137 @@
+{% extends "core/base.html" %}
+
+{% load i18n staticfiles humanize thumbnail %}
+
+{% block content %}
+<div id="app" class="container-fluid">
+    <div class="row page-titles">
+        <div class="col-md-6 col-8 align-self-center">
+            <h3 class="text-themecolor m-b-0 m-t-0">{{ title }}</h3>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                <li class="breadcrumb-item active">{{ title }}</li>
+            </ol>
+        </div>
+
+        <div class="col-md-6 col-4 align-self-center">
+            <button type="button" class="btn pull-right hidden-sm-down btn-info" data-toggle="modal" data-target="#addModelModal"><i class="mdi mdi-plus-circle"></i> Nuevo presupuesto </button>
+<!--             <div class="dropdown pull-right m-r-10 hidden-sm-down">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Pendientes</button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              <a class="dropdown-item" href="#">Todos mis presupuestos</a>
+            </div>
+          </div> -->
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <!-- .left-right-aside-column-->
+                <div class="row">
+                    <!-- .left-aside-column-->
+                    <div class="col-xlg-3 col-lg-4 col-md-4">
+                      <div class="card-body inbox-panel">
+                        <!--a href="app-compose.html" class="btn btn-danger m-b-20 p-10 btn-block waves-effect waves-light">Compose</a-->
+                        <ul class="list-group list-group-full in">
+                            <li class="list-group-item" v-for="status in statusList"> <a href="javascript:void(0)"><i :class="'mdi mdi-' + getIcon(status.code)"></i> $#status.name|proper_case# </a><span v-if="status.get_count > 0" :class="'badge badge-' + getColor(status.code) + ' ml-auto'">$#status.get_count#</span></li>
+                        </ul>
+                        <!--h3 class="card-title m-t-40">Labels</h3>
+                        <div class="list-group b-0 mail-list">
+                          <a href="#" class="list-group-item"><span class="fa fa-circle text-info m-r-10"></span>Work</a>
+                          <a href="#" class="list-group-item"><span class="fa fa-circle text-warning m-r-10"></span>Family</a>
+                          <a href="#" class="list-group-item"><span class="fa fa-circle text-purple m-r-10"></span>Private</a>
+                          <a href="#" class="list-group-item"><span class="fa fa-circle text-danger m-r-10"></span>Friends</a>
+                          <a href="#" class="list-group-item"><span class="fa fa-circle text-success m-r-10"></span>Corporate</a>
+                        </div-->
+                      </div>
+                    </div>
+                    <!-- /.left-aside-column-->
+                    <div class="col-xlg-9 col-lg-8 col-md-8">
+                        <div class="right-page-header">
+                            <div class="card-body">
+                              <div class="d-flex">
+                                <div class="align-self-center">
+                                    <h4 class="card-title m-t-10">Presupuestos </h4></div>
+                                <div class="ml-auto">
+                                    <input type="text" id="demo-input-search2" placeholder="buscar presupuesto" class="form-control" name="query" v-model="searchQuery"> </div>
+                              </div>
+                            </div>
+                        </div>
+                        <edit-grid
+                          :data="budgetList"
+                          :columns="gridColumns"
+                          :filter-key="searchQuery"
+                          :edit_function="getBudget"
+                          :delete_function="deleteBudget"
+                          :color_function="getColor"
+                          :status_list="statusList"
+                          :status_edit_function="getStatusBudget">
+                        </edit-grid>
+                        <!-- .left-aside-column-->
+                    </div>
+                    <!-- /.left-right-aside-column-->
+                </div>
+            </div>
+        </div>
+    </div>
+<!-- Modals -->
+
+    {# Formulario Modal de Edición de Modelo #}
+
+    {% include "budget/includes/budget_form_edit.html" %}
+
+    {# Formulario Modal de Adicionar Modelo #}
+
+
+    {% include "budget/includes/budget_form_add.html" %}
+
+    {% include "budget/includes/budget_form_status_edit.html" %}
+
+
+
+
+<!-- End Modals -->
+</div>
+
+{% endblock %}
+{% block extra_js %}
+  
+  <script type="text/x-template" id="edit-grid-template">
+    <div class="card">
+        <!-- ============================================================== -->
+        <!-- Comment widgets -->
+        <!-- ============================================================== -->
+        <div class="comment-widgets">
+            <!-- Comment Row -->
+            <div class="d-flex flex-row comment-row" v-for="entry in filteredData">
+                <div class="p-2"><span class="round" v-tooltip="entry.get_client"><img v-if="entry.get_client_logo" :src="entry.get_client_logo" alt="user" width="50"></span></div>
+                <div class="comment-text w-100">
+                    <h5>$#entry.code#</h5>
+                    <p class="m-b-5">$#entry.title#</p>
+                    <div class="comment-footer">
+                        <span class="text-muted pull-right" v-tooltip="{ content: 'Fecha de presentación' }">$#entry.deadline#</span>
+                        <span :class="'label label-light-' + color_function(entry.status)">$#entry['get_status_display']#</span>
+                        <span class="action-icons">
+                                <a v-on:click="edit_function(entry['id'])" v-tooltip="{ content: 'Modificar' }"><i class="ti-pencil-alt"></i></a>
+                                <a v-on:click="status_edit_function(entry['id'])" v-tooltip="{ content: 'Cambia estado' }"><i class="ti-check"></i></a>
+                                <a :href="'/budget/' + entry['id']" v-tooltip="{ content: 'Modificar APU' }"><i class="ti-heart"></i></a>    
+                            </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  </script>
+
+  <script src="{% static "budget/js/budget.js" %}"></script>
+
+  <script>
+    $('.datepicker').on('dp.change', function(event) {
+      var date = event.date.format('YYYY-MM-DD');
+      console.log(date);
+      Vue.set(vm, 'currentModel.deadline', date);
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,121 @@
+    <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modificar Tarea</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+          <form v-on:submit.prevent="updateTask()">
+            <div class="modal-body">
+              <div v-if="errors.length" class="alert alert-warning" role="alert">
+                  <b>Por favor corrija los siguientes errores:</b>
+                  <ul>
+                    <li v-for="error in errors">
+                      <ul>
+                        <li v-for="[key, value] in Object.entries(error)">
+                          ${key}: ${value[0]}
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="name">Nombre</label>
+                    <input
+                      type="text"
+                      maxlength="150"
+                      class="form-control"
+                      name="name"
+                      placeholder="Escriba el nombre de la tarea"
+                      id="name"
+                      v-model="selectedTask.name">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="wbs">EDT</label>
+                    <input
+                      type="text"
+                      maxlength="15"
+                      class="form-control"
+                      name="wbs"
+                      placeholder="EDT"
+                      id="wbs"
+                      v-model="selectedTask.wbs"
+                      readonly>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="unit">Unidad</label>
+                    <input
+                      type="text"
+                      maxlength="15"
+                      class="form-control"
+                      name="unit"
+                      placeholder="Unidad"
+                      id="unit"
+                      v-model="selectedTask.unit">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="quantity">Cantidad</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      class="form-control"
+                      name="quantity"
+                      placeholder="Cantidad"
+                      id="quantity"
+                      v-model="selectedTask.quantity">
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="projected_start_date">Fecha de inicio</label>
+                    <input
+                      type="text"
+                      maxlength="15"
+                      class="form-control"
+                      name="projected_start_date"
+                      placeholder="Fecha de inicio"
+                      id="projected_start_date"
+                      v-model="selectedTask.projected_start_date">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="projected_finish_date">Fecha de fin</label>
+                    <input
+                      type="text"
+                      maxlength="15"
+                      class="form-control"
+                      name="projected_finish_date"
+                      placeholder="Fecha de fin"
+                      id="projected_finish_date"
+                      v-model="selectedTask.projected_finish_date">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+          </form>
+        </div>
+        </div>
+      </div>
+    </div>

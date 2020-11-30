@@ -1,0 +1,467 @@
+{% extends "core/base.html" %}
+
+{% load i18n staticfiles humanize thumbnail %}
+
+{% block content %}
+  <div id="app" class="div-block-7 w-clearfix">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-10">
+          <div class="topdashbartext"><h1>Recurso: Mano de obra</h1></div>
+        </div>
+        <div class="col-sm-2">
+          <div data-delay="0" class="w-dropdown">
+            <div class="topnamebutton w-dropdown-toggle">
+              <div class="sectiontextoption">M</div>
+            </div>
+            <nav class="dropdown-list w-dropdown-list">
+              <a href="#" class="menuoption w-dropdown-link">Link 1</a>
+              <a href="#" class="menuoption w-dropdown-link">Link 2</a>
+              <a href="#" class="menuoptionseparator menuoption w-dropdown-link">Link 3</a></nav>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    {# Grilla #}
+  <div class="bodybudget">
+    <div class="row">
+      <div class="w-row">
+        <div class="w-col w-col-6">
+          <form id="search">
+            Buscar <input name="query" v-model="searchQuery">
+          </form>
+        </div>
+        <div class="w-col w-col-6">
+          <button  type="button" class="btn btn-primary" data-toggle="modal" data-target="#addManpowerModal">Adicionar Mano de obra</button>
+        </div>
+      </div>
+    </div>
+    <edit-grid
+      :data="manpowers"
+      :columns="gridColumns"
+      :widths="widthColumns"
+      :filter-key="searchQuery"
+      :edit_function="getManpower"
+      :delete_function="deleteManpower">
+    </edit-grid>
+  </div>
+
+    {# Loader #}
+
+    <div class="loading" v-if="loading===true">Loading&#8230;</div>
+
+    {# Formulario Modal de Edición de Mano de Obra #}
+
+    <div class="modal fade" id="editManpowerModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Editar Mano de obra</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form v-on:submit.prevent="updateManpower()">
+          <div class="modal-body">
+            <div v-if="errors.length" class="alert alert-warning" role="alert">
+                <b>Por favor corrija los siguientes errores:</b>
+                <ul>
+                  <li v-for="error in errors">
+                    <ul>
+                      <li v-for="[key, value] in Object.entries(error)">
+                        ${key}: ${value[0]}
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="Manpower_name">Código</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="Manpower_code"
+                  data-name="Manpower_code"
+                  placeholder="Código"
+                  v-model="currentManpower.code"
+                  id="Manpower_code"
+                  autofocus>
+              </div>
+              <div class="form-group col-md-8">
+                <label for="Manpower_name">Nombre</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="Manpower_name"
+                  data-name="Manpower_name"
+                  placeholder="Nombre de la mano de obra"
+                  v-model="currentManpower.nombre"
+                  id="Manpower_name"
+                  required="required">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="name-2">Unidad</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="unit"
+                  data-name="unit"
+                  placeholder="Unidad"
+                  v-model="currentManpower.unidad"
+                  id="unit">
+              </div>
+              <div class="form-group col-md-4">
+                <label>Moneda</label>
+                <select 
+                  id="moneda_manpower"
+                  name="moneda_manpower"
+                  data-name="moneda_manpower"
+                  class="w-select"
+                  v-model="currentManpower.moneda"
+                  required="required">
+                  <option selected value="D">Dólares</option>
+                  <option value="S">Soles</option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label for="name-3">Precio</label>
+                <input 
+                  type="text"
+                  class="w-input"
+                  maxlength="25"
+                  name="precio"
+                  data-name="precio"
+                  placeholder="Precio"
+                  id="precio"
+                  v-model="currentManpower.precio"
+                  required="required">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+            <!--div class="rowoptionsform"><input type="submit" value="Guardar" data-wait="Guardando..." class="w-button"><a href="#" class="formoptioncancel" data-dismiss="modal">Cerrar</a></div-->
+          </form>
+        </div>
+      </div>
+    </div>
+
+    {# Formulario Modal de Adicionar Mano de Obra #}
+
+    <div class="modal fade" id="addManpowerModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Adicionar Mano de obra</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <form v-on:submit.prevent="addManpower()">
+          <div class="modal-body">
+            <div v-if="errors.length" class="alert alert-warning" role="alert">
+                <b>Por favor corrija los siguientes errores:</b>
+                <ul>
+                  <li v-for="error in errors">
+                    <ul>
+                      <li v-for="[key, value] in Object.entries(error)">
+                        ${key}: ${value[0]}
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="Manpower_name">Código</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="Manpower_code"
+                  data-name="Manpower_code"
+                  placeholder="Código"
+                  v-model="newManpower.code"
+                  id="Manpower_code"
+                  autofocus>
+              </div>
+              <div class="form-group col-md-8">
+                <label for="Manpower_name">Nombre</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="Manpower_name"
+                  data-name="Manpower_name"
+                  placeholder="Nombre de la mano de obra"
+                  v-model="newManpower.nombre"
+                  id="Manpower_name"
+                  required="required">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-md-4">
+                <label for="name-2">Unidad</label>
+                <input
+                  type="text"
+                  class="w-input"
+                  maxlength="256"
+                  name="unit"
+                  data-name="unit"
+                  placeholder="Unidad"
+                  v-model="newManpower.unidad"
+                  id="unit">
+              </div>
+              <div class="form-group col-md-4">
+                <label>Moneda</label>
+                <select 
+                  id="moneda_manpower"
+                  name="moneda_manpower"
+                  data-name="moneda_manpower"
+                  class="w-select"
+                  v-model="newManpower.moneda"
+                  required="required">
+                  <option selected value="D">Dólares</option>
+                  <option value="S">Soles</option>
+                </select>
+              </div>
+              <div class="form-group col-md-4">
+                <label for="name-3">Precio</label>
+                <input 
+                  type="text"
+                  class="w-input"
+                  maxlength="25"
+                  name="precio"
+                  data-name="precio"
+                  placeholder="Precio"
+                  id="precio"
+                  v-model="newManpower.precio"
+                  required="required">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+            <!--div class="rowoptionsform"><input type="submit" value="Guardar" data-wait="Guardando..." class="w-button"><a href="#" class="formoptioncancel" data-dismiss="modal">Cerrar</a></div-->
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<!-- component template -->
+
+<script type="text/x-template" id="edit-grid-template">
+<div>
+      <div class="titlebodybudget w-row rowbodybudget">
+        <div class="w-col" v-for="key in columns"
+          @click="sortBy(key)"
+          :class="[{ active: sortKey == key }, 'w-col-' + widths[columns.indexOf(key)]]">
+          ${key | capitalize}
+          <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+          </span>
+        </div>
+      </div>
+
+      <div class="itembodybudget w-row" v-for="entry in filteredData">
+        <div class='w-col' :class="'w-col-' + widths[columns.indexOf(key)]" v-for="key in columns">
+          <div>${entry[key]}</div>
+        </div>
+        <a href="#" class="inlinedescriptionoption w-inline-block" v-on:click="delete_function(entry)">
+          <div class="text-block">B</div>
+        </a>
+        <a href="#" class="inlinedescriptionoption w-inline-block" v-on:click="edit_function(entry['id'])">
+          <div class="text-block">p</div>
+        </a>
+      </div>
+</div>
+</script>
+
+<script>
+
+  var csrftoken = Cookies.get('csrftoken');
+  Vue.http.headers.common['X_CSRFTOKEN'] = csrftoken;
+
+  Vue.component('edit-grid', {
+    template: '#edit-grid-template',
+    delimiters: ['${', '}'],
+    props: {
+      data: Array,
+      columns: Array,
+      widths: Array,
+      filterKey: String,
+      edit_function: Function,
+      delete_function: Function,
+    },
+    data: function () {
+      var sortOrders = {}
+      this.columns.forEach(function (key) {
+        sortOrders[key] = 1
+      })
+      return {
+        sortKey: '',
+        sortOrders: sortOrders
+      }
+    },
+    computed: {
+      filteredData: function () {
+        var sortKey = this.sortKey
+        var filterKey = this.filterKey && this.filterKey.toLowerCase()
+        var order = this.sortOrders[sortKey] || 1
+        var data = this.data
+        if (filterKey) {
+          data = data.filter(function (row) {
+            return Object.keys(row).some(function (key) {
+              return String(row[key]).toLowerCase().indexOf(filterKey) > -1
+            })
+          })
+        }
+        if (sortKey) {
+          data = data.slice().sort(function (a, b) {
+            a = a[sortKey]
+            b = b[sortKey]
+            return (a === b ? 0 : a > b ? 1 : -1) * order
+          })
+        }
+        return data
+      }
+    },
+    filters: {
+      capitalize: function (str) {
+        return str.charAt(0).toUpperCase() + str.slice(1)
+      }
+    },
+    methods: {
+      sortBy: function (key) {
+        this.sortKey = key
+        this.sortOrders[key] = this.sortOrders[key] * -1
+      },
+    },
+  })
+
+  new Vue({
+        el: '#app',
+        delimiters: ['${', '}'],
+        data: {
+          searchQuery: '',
+          gridColumns: ['code', 'nombre', 'unidad', 'moneda', 'precio'],
+          widthColumns: [1,7,1,1,1],
+          manpowers: [],
+          loading: true,
+          errors: [],
+          currentManpower: {},
+          newManpower: {
+            "code": null,
+            "nombre": null,
+            "unidad": "Hr",
+            "moneda": "D",
+            "precio": "0.00",
+          },
+        },
+        mounted: function() {
+          this.getManpowers();
+        },
+        methods: {
+          padding_left: function(level){
+            return "pad_left_" + level
+          },
+          getManpowers: function() {
+            this.loading = true;
+            this.$http.get('/api/manpowers/')
+                .then((response) => {
+                  this.manpowers = response.data;
+                  this.loading = false;
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  console.log(err);
+                })
+          },
+          getManpower: function(id) {
+            this.loading = true;
+            this.$http.get(`/api/manpowers/${id}/`)
+                .then((response) => {
+                  this.currentManpower = response.data;
+                  $("#editManpowerModal").modal('show');
+                  $("#Manpower_code").focus();
+                  this.loading = false;
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  console.log(err);
+                })
+          },
+          updateManpower: function() {
+            this.loading = true;
+            this.$http.put(`/api/manpowers/${this.currentManpower.id}/`, this.currentManpower)
+                .then((response) => {
+                  this.loading = false;
+                  this.currentManpower = response.data;
+                  $("#editManpowerModal").modal('hide');
+                  this.errors = [],
+                  this.getManpowers();
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  this.errors = [],
+                  this.errors.push(err.body);
+                  console.log("error>>>", err);
+                })
+          },
+          addManpower: function() {
+            this.loading = true;
+            this.$http.post(`/api/manpowers/`,this.newManpower)
+                .then((response) => {
+                  this.loading = false;
+                  this.errors = [],
+                  $("#addManpowerModal").modal('hide');
+                  this.getManpowers();
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  this.errors = [],
+                  this.errors.push(err.body);
+                  console.log("error>>>", err);
+                })
+          },
+          deleteManpower: function(obj) {
+                swal({
+                  title: "¿Está seguro de borrar?",
+                  text: obj.nombre + ", será borrado.",
+                  icon: "warning",
+                  buttons: ["Cancelar", "Borrar"],
+                  // button: "Borrar",
+                  dangerMode: true,
+                })
+                .then((willDelete) => {
+                  if (willDelete) {
+                    this.loading = true;
+                    this.$http.delete(`/api/manpowers/${obj.id}/`)
+                        .then((response) => {
+                          this.loading = false;
+                          this.getManpowers();
+                        })
+                        .catch((err) => {
+                          this.loading = false;
+                          console.log(err);
+                        });
+                  }
+                });
+            }
+          }
+        })
+</script>
+{% endblock %}

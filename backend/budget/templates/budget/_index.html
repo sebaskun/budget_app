@@ -1,0 +1,243 @@
+{% extends "budget/base.html" %}
+
+{% load i18n staticfiles humanize %}
+
+{% block extra_css %}
+<link href="{% static "core/css/multiple-select.css" %}" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="{% static "core/css/custom.css" %}">
+{% endblock %}
+
+{% block title %}Presupuesto{% endblock %}
+{% block section_title %}<h2>Presupuesto</h2>{% endblock %}
+{% block section_action %}
+{# <a class="btn btn-block btn-primary compose-mail" href="#">Nuevo Presupuesto</a> #}
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal4">
+    Basic fadeIn effect
+</button>
+{% endblock %}
+{% block filter_options %}
+    <h5>Filtros</h5>
+    <form method="get" name="form_filter" id="id_form_filter">
+        {{ form_filter.as_p }}
+        <br>
+        <button type="submit" class="btn btn-block btn-primary"> Filtrar</button>
+    </form>
+{% endblock %}
+{% block content%}
+    <div class="mail-box-header">
+        <div class="pull-right tooltip-demo">
+            <button type="submit" form="id_form_filter" name="export" value="Submit" class="btn btn-white btn-sm" formtarget="_blank"><i class="fa fa-file-excel-o"></i> Exportar</button>
+            <button type="submit" form="id_form_filter" name="printer" value="Submit" class="btn btn-white btn-sm" formtarget="_blank"><i class="fa fa-print"></i> Imprimir</button>
+        </div>
+        <h2>
+            Presupuestos ({{ count }})
+        </h2>
+        <small class="text-muted m-b block">
+            {% for item in filter_list %}
+                {{item.filter_name}}: {{item.value}} {% if not forloop.last %}|{% endif %}
+            {% endfor %}
+        </small>
+        <div class="mail-tools tooltip-demo m-t-md">
+            <button id="refresh_page" class="btn btn-white btn-sm" data-toggle="tooltip" data-placement="left" title="" data-original-title="Refresh inbox"><i class="fa fa-refresh"></i> Refrescar</button>
+            <button type="submit" form="id_form_select" name="wo_to_doing" value="Submit" class="btn btn-white btn-sm">Marcar como en ejecución</button>
+            <button type="submit" form="id_form_select" name="wo_to_done" value="Submit" class="btn btn-white btn-sm">Marcar como realizado</button>
+            <button type="submit" form="id_form_select" name="wo_to_valorize" value="Submit" class="btn btn-white btn-sm">Marcar como valorizado</button>
+            <button type="submit" form="id_form_select" name="wo_to_archive" value="Submit" class="btn btn-white btn-sm">Archivar</button>
+        </div>
+    </div>
+
+    <form method="post" name="form_select" id="id_form_select">
+        {% csrf_token %}
+        <div class="mail-box">
+
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select_all"/></th>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody> 
+                        {% for obj in object_list %}
+                        <tr>
+                            <td class="action-checkbox"><input form="id_form_select" class="action-select" name="_selected_action" type="checkbox" value="{{obj.pk}}" /></td>
+                            <td><a target="_blank" href="#" class="tooltip-x"> {{ obj.wo_number }} <span>Último cambio <time class='timeago' datetime="{{obj.modified|date:"c"}}">{{obj.modified|date:"c"}}</time> por {{obj.modified_by}}</span> </a></td>
+                            <td class="mail-contact">
+                                <a href="#" target="_blank">{{ obj.location_osm.name }}</a>
+                            </td>
+                            <td class="mail-contact">
+                                {{ obj.osm.get_osm_set_ancestor.equipment_number }} / <a target="_blank" href="#">{{ obj.osm.get_description }}</a></td>
+                            <td>{{ obj.activity.nomenclature }}</td>
+                            <td>{{ obj.get_activity_type_display }}</td>
+                            <td><span class="pull-right">{{ obj.total_activity|floatformat:2|intcomma }}</span></td>
+                            <td><span class="pull-right">{{ obj.total_material|floatformat:2|intcomma }}</span></td>
+                            <td><span class="pull-right">{{ obj.get_total|floatformat:2|intcomma }}</span></td>
+                            <td>{{ obj.date_init_executed|date:"d/m/y"}}<br></td>
+                            {% if form_filter.show_times.value %}
+                                <td>{{ obj.date_init_executed|date:"H:i"}}</td>
+                                <td>{{ obj.date_end_executed|date:"H:i"}}</td>
+                            {% endif %}
+                            <td><span class="label label-wo-{{ obj.status|lower }}">{% if obj.is_status_accept %}Val. {{obj.valorization.order}}{% else %}{{ obj.get_status_display }}{% endif %}</span></td>
+                            <td>
+                                <div class="ibox-tools">
+                                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                                        <i class="fa fa-wrench"></i>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-list">
+                                    {% if obj.is_status_new %}
+                                        <li><a href="#" >Modificar</a></li>
+                                        <li><a href="#" >En ejecución</a></li>
+                                    {% endif %}
+                                    {% if obj.is_status_doing %}
+                                        <li><a href="#" >Modificar</a></li>
+                                        <li><a href="#" >Nuevo</a></li>
+                                        <li><a href="#" >Realizado</a></li>
+                                    {% endif %}
+                                    {% if obj.is_status_done %}
+                                        <li><a href="#" >En ejecución</a></li>
+                                        <li><a href="#" >Aceptado</a></li>
+                                        <li><a href="#" >Rechazado</a></li>
+                                    {% endif %}
+                                    {% if obj.is_status_accept or obj.is_status_reject %}
+                                        <li><a href="#" >
+                                        {% if obj.is_archived %}Ver en lista{% else %}Archivar{% endif %}</a></li>
+                                    {% endif %}
+                                    {% if obj.is_status_reject %}
+                                        <li><a href="#" >En ejecución</a></li>
+                                    {% endif %}
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% if is_paginated %}
+            <div class="dataTables_paginate paging_simple_numbers">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="paginate_button"><a href="?{{ request.GET.urlencode }}&page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                    {% else %}
+                    <li class="paginate_button disabled"><a href="#">Anterior</a></li>
+                    {% endif %}
+                    {% for page in paginator.page_range %}
+                    <li class="paginate_button {% if page == page_obj.number %}active{% endif %}">
+                        <a href="?{{ request.GET.urlencode }}&page={{ page }}">{{ page }}</a>
+                    </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="paginate_button"><a href="?{{ request.GET.urlencode }}&page={{ page_obj.next_page_number }}">Siguiente</a></li>
+                    {% else %}
+                    <li class="paginate_button disabled"><a href="#">Siguiente</a></li>
+                    {% endif %}
+                </span>
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="modal inmodal" id="myModal4" tabindex="-1" role="dialog"  aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content animated fadeIn">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                            <i class="fa fa-clock-o modal-icon"></i>
+                            <h4 class="modal-title">Modal title</h4>
+                            <small>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</small>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Lorem Ipsum is simply dummy</strong> text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown
+                                printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting,
+                                remaining essentially unchanged.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-white" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static "core/js/plugins/multiple-select/multiple-select.js" %}" type="text/javascript"></script>
+<script src="{% static "core/js/plugins/timeago/jquery.timeago.js" %}" type="text/javascript"></script>
+<script src="{% static "core/js/plugins/timeago/locales/jquery.timeago.es.js" %}" type="text/javascript"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/locales/bootstrap-datepicker.es.min.js"></script>
+<script>
+    $('.datepicker').datepicker({
+    format: 'dd/mm/yyyy',
+    language: 'es',
+    });
+</script>
+<script>
+    $('#select_all').change(function() {
+        var checkboxes = $(this).closest('form').find(':checkbox');
+        if($(this).is(':checked')) {
+            checkboxes.prop('checked', true);
+        } else {
+            checkboxes.prop('checked', false);
+        }
+    });
+
+    jQuery(document).ready(function() {
+      jQuery("time.timeago").timeago();
+    });
+    // Accion para refrescar la pantalla
+    $('#refresh_page').click(function() {
+        location.reload();
+    });
+
+    $('#id_location_osm').multipleSelect(
+        {placeholder: "Seleccione la ubicación",
+        multiple: true,
+        filter: true,
+        width: '100%',
+        multipleWidth: 350,
+        selectAllText: "Seleccionar todo",}
+    );
+    $('#id_activity').multipleSelect(
+        {placeholder: "Seleccione la actividad",
+        multiple: true,
+        width: '100%',
+        multipleWidth: 350,
+        selectAllText: "Seleccionar todo",}
+    );
+    $('#id_activity_type').multipleSelect(
+        {placeholder: "Seleccione el tipo de actividad",
+        multiple: true,
+        width: '100%',
+        multipleWidth: 350,
+        selectAllText: "Seleccionar todo",}
+    );
+    $('#id_status').multipleSelect(
+        {placeholder: "Seleccione el estado",
+        multiple: true,
+        width: '100%',
+        multipleWidth: 150,
+        selectAllText: "Seleccionar todo",}
+    );
+    $('#id_gang').multipleSelect(
+        {placeholder: "Seleccione la cuadrilla",
+        multiple: true,
+        width: '100%',
+        multipleWidth: 350,
+        selectAllText: "Seleccionar todo",}
+    );
+    // $('#id_zone').multipleSelect(
+    //     {placeholder: "Seleccione una zona",
+    //     multiple: true,
+    //     width: '100%',
+    //     multipleWidth: 350,
+    //     selectAllText: "Seleccionar todo",}
+    // );
+</script>
+{% endblock %}

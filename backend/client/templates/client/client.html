@@ -1,0 +1,392 @@
+{% extends "core/base.html" %}
+
+{% load i18n staticfiles humanize thumbnail %}
+
+{% block content %}
+<div id="app" class="container-fluid">
+    <div class="row page-titles">
+        <div class="col-md-6 col-8 align-self-center">
+            <h3 class="text-themecolor m-b-0 m-t-0">{{ title }}</h3>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="javascript:void(0)">Inicio</a></li>
+                <li class="breadcrumb-item active">{{ title }}</li>
+            </ol>
+        </div>
+
+        <div class="col-md-6 col-4 align-self-center">
+          <button type="button" class="btn pull-right hidden-sm-down btn-info" data-toggle="modal" data-target="#addModelModal"><i class="mdi mdi-plus-circle"></i> {{add_button_text}} </button>
+        </div>
+    </div>
+
+    {% include "client/includes/form_add.html" %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+
+                    <!-- /.left-aside-column-->
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-md-6">
+                          <h4 class="card-title">{{title}} </h4>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="ml-auto pull-right">
+                            <input type="text" id="demo-input-search2" placeholder="{{search_placeholder}}" class="form-control" name="query" v-model="searchQuery">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="table-responsive">
+                        <edit-grid
+                          :data="dataSet"
+                          :columns="gridColumns"
+                          :columns_title="gridColumnsTitle"
+                          :widths="gridColumnsWidth"
+                          :filter-key="searchQuery"
+                          :edit_function="getData"
+                          :delete_function="deleteData"
+                          :width_function="widthColumns"
+                        >
+                        </edit-grid>
+                      </div>
+                      <!-- .left-aside-column-->
+                  </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Modals -->
+
+    {# Formulario Modal de Edición de Modelo #}
+
+    {% include "client/includes/form_edit.html" %}
+
+    {# Formulario Modal de Adicionar Modelo #}
+
+    
+
+    <!-- End Modals -->
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script type="text/x-template" id="edit-grid-template">
+  <div>
+    <table id="demo-foo-addrow" class="table m-t-30 table-hover no-wrap contact-list footable-loaded footable" data-page-size="10">
+      <thead>
+        <tr class="d-flex">
+          <th v-for="key in columns"
+            @click="sortBy(key)"
+            :class="[{ active: sortKey == key }, 'col-sm-' + widths[columns.indexOf(key)]]">
+            $#columns_title[columns.indexOf(key)] | capitalize#
+            <span class="arrow" :class="sortOrders[key] > 0 ? 'asc' : 'dsc'">
+            </span>
+          </th>
+          <th class="col-sm-1">x</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr class="d-flex" v-for="entry in filteredData">
+          <td :class="[width_function(key)]" v-for="key in columns">
+            <span>$#entry[key]#</span>
+          </td>
+          <td>
+            <button type="button" class="btn btn-sm btn-icon btn-pure btn-outline edit-row-btn" data-toggle="tooltip" data-original-title="Editar"><i class="ti-pencil" aria-hidden="true" v-on:click="edit_function(entry['id'])"></i></button>
+            <button type="button" class="btn btn-sm btn-icon btn-pure btn-outline delete-row-btn" data-toggle="tooltip" data-original-title="Eliminar"><i class="ti-close" aria-hidden="true" v-on:click="delete_function(entry)"></i></button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</script>
+
+<script>
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+  }
+
+  var csrftoken = getCookie('csrftoken');
+  // console.log("csrftoken:", csrftoken);
+  
+  Vue.http.headers.common['X-CSRFToken'] = csrftoken;
+
+  Vue.component('v-select', VueSelect.VueSelect);
+
+  Vue.component('edit-grid', {
+    template: '#edit-grid-template',
+    delimiters: ['$#', '#'],
+    props: {
+      data: Array,
+      columns: Array,
+      columns_title: Array,
+      widths: Array,
+      filterKey: String,
+      edit_function: Function,
+      delete_function: Function,
+      fields_link: Array,
+      width_function: Function,
+      align_function: Function,
+    },
+    data: function () {
+      var sortOrders = {}
+      this.columns.forEach(function (key) {
+        sortOrders[key] = 1
+      })
+      return {
+        sortKey: '',
+        sortOrders: sortOrders
+      }
+    },
+    computed: {
+      filteredData: function () {
+        var sortKey = this.sortKey
+        var filterKey = this.filterKey && this.filterKey.toLowerCase()
+        var order = this.sortOrders[sortKey] || 1
+        var data = this.data
+        if (filterKey) {
+          data = data.filter(function (row) {
+            return Object.keys(row).some(function (key) {
+              return String(row[key]).toLowerCase().indexOf(filterKey) > -1
+            })
+          })
+        }
+        if (sortKey) {
+          data = data.slice().sort(function (a, b) {
+            a = a[sortKey]
+            b = b[sortKey]
+            return (a === b ? 0 : a > b ? 1 : -1) * order
+          })
+        }
+        return data
+      }
+    },
+    filters: {
+      capitalize: function (str) {
+        return str.charAt(0).toUpperCase() + str.slice(1)
+      },
+      currency: function (str, curr="D") {
+        symbol = {'S': 'S/', 'D': "$"}
+        return symbol[curr] + " " + numeral(str).format('0,0.00');
+      }
+
+    },
+    methods: {
+      sortBy: function (key) {
+        this.sortKey = key
+        this.sortOrders[key] = this.sortOrders[key] * -1
+      },
+    },
+  })
+
+  const init_data = {
+    "name": null,
+    "short_name": null,
+    "initials": null,
+    "ruc": null,
+    "address": null,
+    "logo": null,
+  }
+
+  new Vue({
+        el: '#app',
+        delimiters: ['$#', '#'],
+        data: {
+          searchQuery: '',
+          dataInit: init_data,
+          data: {},
+          dataSet: [],
+          gridColumns: {{grid_fields|safe}},
+          gridColumnsTitle: {{grid_fields_title|safe}},
+          gridColumnsWidth: [1,6,2,2],
+          gridColumnsLink: [],
+          // gridColumnsRightAlign: {{ grid_fields_right_align|safe }},
+          loading: true,
+          errors: [],
+          categoriesData: [],
+          category: {},
+          selectedCategory: ''
+        },
+        mounted: function() {
+          this.getDataSet();
+          // this.getCategoriesData();
+          // $('.datepicker').datepicker({
+          //   format: 'yyyy-mm-dd',
+          //   autoclose: true,
+          //   todayHighlight: true,
+          //   onSelect: function(dateText) {
+          //     console.log("****", dateText);
+          //   }
+          // })
+        },
+        methods: {
+          // padding_left: function(level){
+          //   return "pad_left_" + level
+          // },
+          // countsCategorized: function(){
+          //   var count = 0;
+          //   this.categoriesData.forEach(function(key){
+          //     count += isNaN(key.get_count) ? 0 : key.get_count
+          //   })
+          //   return count
+          // },
+          // alignRight: function(key) {
+          //   if (this.gridColumnsRightAlign.indexOf(key)>-1){
+          //     return "text-right"
+          //   }
+          // },
+          widthColumns: function(key){
+            return "col-sm-" + this.gridColumnsWidth[this.gridColumns.indexOf(key)]
+          },
+          getDataSet: function() {
+            this.loading = true;
+            this.$http.get('{{data_url}}')
+                .then((response) => {
+                  this.dataSet = response.data.results;
+                  this.loading = false;
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  // console.log(err);
+                })
+          },
+          // getCategoriesData: function() {
+          //   this.loading = true;
+          //   this.$http.get('{{category_url}}')
+          //       .then((response) => {
+          //         this.categoriesData = response.data.results;
+          //         this.loading = false;
+          //       })
+          //       .catch((err) => {
+          //         this.loading = false;
+          //         // console.log(err);
+          //       })
+          // },
+          getData: function(id) {
+            this.loading = true;
+            // console.log("id:", id);
+            this.$http.get(`{{data_url}}${id}/`)
+                .then((response) => {
+                  this.data = response.data;
+                  // this.selectedCategory = this.categoriesData.find(item => item.id === this.data.category);
+                  $("#editModelModal").modal('show');
+                  this.loading = false;
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  // console.log(err);
+                })
+          },
+          updateData: function() {
+            this.loading = true;
+            // console.log("selectedCategory: ", this.selectedCategory);
+            // if (this.selectedCategory){
+            //   this.data.category=this.selectedCategory.id;
+            // }
+            this.$http.put(`{{data_url}}${this.data.id}/`, this.data)
+                .then((response) => {
+                  this.loading = false;
+                  this.data = response.data;
+                  $("#editModelModal").modal('hide');
+                  this.errors = [];
+                  this.getDataSet();
+                  // this.getCategoriesData();
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  this.errors = [];
+                  this.errors.push(err.body);
+                  // console.log("error>>>", err);
+                })
+          },
+          addData: function() {
+            this.loading = true;
+            // if (this.selectedCategory){
+            //   this.dataInit.category=this.selectedCategory.id;
+            // }
+            this.$http.post(`{{data_url}}`,this.dataInit)
+                .then((response) => {
+                  this.loading = false;
+                  this.errors = [];
+                  $("#addModelModal").modal('hide');
+                  this.DataInit = init_data,
+                  this.getDataSet();
+                })
+                .catch((err) => {
+                  this.loading = false;
+                  this.errors = [],
+                  this.errors.push(err.body);
+                  // console.log("error>>>", err);
+                })
+          },
+          // addCategory: function() {
+          //   this.loading = true;
+          //   // console.log("category:", this.category);
+          //   this.$http.post(`{{category_url}}`,this.category)
+          //       .then((response) => {
+          //         this.loading = false;
+          //         this.errors = [];
+          //         $("#categoryModal").modal('hide');
+          //         // this.DataInit = init_data,
+          //         this.getCategoriesData();
+          //       })
+          //       .catch((err) => {
+          //         this.loading = false;
+          //         this.errors = [],
+          //         this.errors.push(err.body);
+          //         // console.log("error>>>", err);
+          //       })
+          // },
+          deleteData: function(obj) {
+                // console.log("Delete::", obj);
+                swal({
+                  title: "¿Está seguro de borrar?",
+                  text: obj.name + ", será borrado.",
+                  icon: "warning",
+                  buttons: ["Cancelar", "Borrar"],
+                  // button: "Borrar",
+                  dangerMode: true,
+                })
+                .then((willDelete) => {
+                  if (willDelete) {
+                    this.loading = true;
+                    this.$http.delete(`{{data_url}}${obj.id}/`)
+                        .then((response) => {
+                          this.loading = false;
+                          this.getDataSet();
+                        })
+                        .catch((err) => {
+                          this.loading = false;
+                          // console.log(err);
+                        });
+                  }
+                });
+          },
+        },
+      },
+    )
+</script>
+
+
+<script>
+  $('.category-name').trunk8();
+
+  $('.datepicker').on('dp.change', function(event) {
+    var date = event.date.format('YYYY-MM-DD');
+    console.log(date);
+    Vue.set(vm, 'data.deadline', date);
+  });
+</script>
+{% endblock %}

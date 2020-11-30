@@ -1,0 +1,168 @@
+{% extends "core/base.html" %}
+
+{% load i18n staticfiles humanize thumbnail %}
+
+{% block content %}
+        <div id="app" class="div-block-7 w-clearfix">
+          <h1 class="meetingsh1">Presupuesto</h1>
+          <div class="topdashbar">
+            <div class="stathold">
+              <div class="statrow w-row">
+                <div class="leftcolstat w-col w-col-2 w-col-stack">
+                  <div><img src="{{task.budget.get_client.logo|thumbnail_url:'avatar2'}}" alt="" class="circlewicon"></div>
+                </div>
+                <div class="column-7 w-col w-col-10 w-col-stack">
+                  <div class="topdashbartext">{{task.budget}}</div>
+                  <div class="topdashbartext"><strong>{{task}}</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bodybudget">
+            <div class="w-row">
+              <div class="w-col w-col-2">
+                <div>Rendimiento</div>
+                <div class="label-budget">{{task.rendimiento}}</div>
+              </div>
+              <div class="w-col w-col-2">
+                <div>Cantidad Unitaria</div>
+                <div class="label-budget">{{task.cantidad}}</div>
+              </div>
+              <div class="w-col w-col-2">
+                <div>Unidad</div>
+                <div class="label-budget">{{task.unidad|default:"-"}}</div>
+              </div>
+              <div class="w-col w-col-4">
+                <div>.</div>
+              </div>
+              <div class="w-col w-col-2">
+                <div class="alignright">Subtotal</div>
+                <div class="label-budget alignright">{{task.subtotal}}</div>
+              </div>
+            </div>
+          </div>
+          <div class="bodybudget">
+            <div>
+              <div class="title-section">Mano de obra</div>
+              <div class="titlebodybudget w-row">
+                <div class="w-col w-col-7">
+                  <div>Descripción</div>
+                </div>
+                <div class="w-col w-col-1">
+                  <div>Cant..</div>
+                </div>
+                <div class="w-col w-col-1">
+                  <div>P.U.</div>
+                </div>
+                <div class="w-col w-col-1">
+                  <div>Rendimiento</div>
+                </div>
+                <div class="alignright w-col w-col-1">
+                  <div class="alignright">Subtotal</div>
+                </div>
+                <div class="w-col w-col-1">
+                  <div>.</div>
+                </div>
+              </div>
+              <div v-for="manpower in manpowers" class="itembodybudget w-row">
+                <div class="w-col w-col-7">
+                  <div>{[manpower.get_manpower_name]}</div>
+                </div>
+                <div class="w-col w-col-1">
+                  <div>{[manpower.cantidad]}</div>
+                </div>
+                <div class="w-col w-col-1">
+                  <div>{[manpower.get_price_manpower]}</div>
+                </div>
+                <div class="w-col w-col-1">
+                  <div>{[manpower.rendimiento]}</div>
+                </div>
+                <div class="alignright w-col w-col-1">
+                  <div>{[manpower.subtotal]}</div>
+                </div>
+                <div class="w-col w-col-1"><a href="#" class="icon_edit"></a><a href="#" class="icon_delete w-inline-block"></a></div>
+              </div>
+              <div class="w-form">
+                <form @submit.prevent="createManpower" class="form-3">
+                  <div class="w-row">
+                    <div class="w-col w-col-6">
+                      <v-select label="get_manpower_name" :options="items" v-model="new_manpower"></v-select>
+                    </div>
+                    <div class="w-col w-col-2"><input type="text" class="w-input" maxlength="256" name="quantity" data-name="quantity" placeholder="Cantidad" id="quantity" required=""></div>
+                    <div class="w-col w-col-2"><input type="text" class="w-input" maxlength="256" name="yield" data-name="yield" placeholder="Rendimiento" id="yield" required=""></div>
+                    <div class="w-col w-col-2">
+                      <div class="alignright">Subtotal Materiales</div>
+                      <div class="label-budget alignright">21,502.35</div>
+                    </div>
+                  </div><input type="submit" value="Adicionar">
+                </form>
+                <div class="w-form-done">
+                  <div>Thank you! Your submission has been received!</div>
+                </div>
+                <div class="w-form-fail">
+                  <div>Oops! Something went wrong while submitting the form.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+{% endblock %}
+
+{% block extra-js %}
+
+
+  <!-- use the latest release -->
+  <script src="https://unpkg.com/vue-select@latest"></script>
+
+  <script>
+    Vue.component('v-select', VueSelect.VueSelect)
+
+    new Vue({
+      el: '#app',
+      delimiters: ['{[', ']}'],
+      methods: {
+        createManpower: function(){
+          this.manpowers.push({
+            get_manpower_name: this.new_manpower.get_manpower_name,
+            cantidad: 1,
+            get_price_manpower: this.new_manpower.get_price_manpower,
+            rendimiento: 2
+          })
+        }
+      },
+      data: {
+        new_manpower: '',
+        items: [],
+        manpowers: [],
+      },
+      mounted: function () {
+        var self = this;
+        // carga las manos de obras disponibles para el presupuesto
+        $.ajax({
+            url: '/api_v0.1/budgets/{{task.budget.pk}}/manpowers',
+            method: 'GET',
+            success: function (data) {
+                // console.log(data);
+                self.items = data;
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+        // carga las manos de obra usadas en la tarea
+        $.ajax({ 
+            url: '/api_v0.1/tasks_budget/{{task.pk}}/manpowers/',
+            method: 'GET',
+            success: function (data) {
+                // console.log(data);
+                self.manpowers = data;
+            },
+            error: function (error) {
+                console.log(error);
+            }
+        });
+
+    }
+    })
+  </script>
+{% endblock %}

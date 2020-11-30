@@ -1,0 +1,117 @@
+.v-select.searchable .dropdown-toggle {
+  height: 80px; }
+
+.v-select input[type=search].form-control {
+  width: 50% !important;
+  height: 80px !important;
+  position: absolute !important;
+  background: transparent !important; }
+
+.searchable.open input[type=search].form-control {
+  background: transparent !important; }
+
+.v-select .dropdown-toggle::after {
+  display: none; }
+
+.v-select .dropdown-toggle {
+  -webkit-appearance: none; }
+
+.v-select .selected-tag {
+  margin: 6px 0px 0px 6px !important;
+  background: #CD0B18 !important;
+  border: 0px !important;
+  height: 66px;
+  padding-top: 22px;
+  text-align: right; }
+
+.v-select li:hover > a {
+  background: transparent !important; }
+
+.v-select .dropdown-menu > .highlight > a {
+  background: #AA0B18;
+  color: white; }
+
+.v-select .dropdown-menu .active > a {
+  color: #AA0B18;
+  background: rgba(50, 50, 50, 0.5); }
+
+.v-select .dropdown-menu li {
+  line-height: normal !important;
+  text-align: center; }
+.v-select .dropdown-menu a {
+  display: block;
+  padding: 8px 5px; }
+  .v-select .dropdown-menu a:hover {
+    background: #AA0B18 !important;
+    color: white; }
+
+.v-select li.text-center {
+  text-align: center;
+  padding: 80px 0;
+  background: green;
+  color: green; }
+
+.v-select.merlin.searchable .dropdown-toggle {
+  height: 80px; }
+
+.v-select.merlin input[type=search].form-control {
+  width: 50% !important;
+  height: 80px !important;
+  position: absolute !important;
+  background: transparent !important; }
+
+.searchable.open input[type=search].form-control {
+  background: transparent !important; }
+
+.v-select.merlin .dropdown-toggle::after {
+  display: none; }
+
+.v-select.merlin .dropdown-toggle {
+  -webkit-appearance: none; }
+
+.v-select.merlin .selected-tag {
+  margin: 6px 0px 0px 6px !important;
+  background: #CD0B18 !important;
+  border: 0px !important;
+  height: 66px;
+  padding-top: 22px;
+  text-align: right; }
+
+.v-select.merlin li:hover > a {
+  background: transparent !important; }
+
+.v-select.merlin .dropdown-menu > .highlight > a {
+  background: #AA0B18;
+  color: white; }
+
+.v-select.merlin .dropdown-menu .active > a {
+  color: #AA0B18;
+  background: rgba(50, 50, 50, 0.5); }
+
+.v-select.merlin .dropdown-menu li {
+  line-height: normal !important;
+  text-align: center; }
+.v-select.merlin .dropdown-menu a {
+  display: block;
+  padding: 8px 5px; }
+  .v-select.merlin .dropdown-menu a:hover {
+    background: #AA0B18 !important; }
+
+.v-select.merlin li.text-center {
+  text-align: center;
+  padding: 80px 0;
+  background: green;
+  color: green; }
+
+.v-select .dropdown-toggle {
+  display: flex !important;
+  flex-wrap: wrap; }
+
+.v-select input[type=search], .v-select input[type=search]:focus {
+  flex-basis: 20px;
+  flex-grow: 1;
+  height: 33px;
+  padding: 0 20px 0 10px;
+  width: 100% !important; }
+
+/*# sourceMappingURL=v-select.css.map */

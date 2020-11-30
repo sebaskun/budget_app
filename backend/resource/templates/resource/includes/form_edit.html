@@ -1,0 +1,134 @@
+<div class="modal fade" id="editModelModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modificar {{title}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <form v-on:submit.prevent="updateData()">
+        <div class="modal-body">
+          <div v-if="errors.length" class="alert alert-warning" role="alert">
+              <b>Por favor corrija los siguientes errores:</b>
+              <ul>
+                <li v-for="error in errors">
+                  <ul>
+                    <li v-for="[key, value] in Object.entries(error)">
+                      $#key#: $#value[0]#
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+          </div>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="form-group">
+                <label for="name">Código</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  maxlength="30"
+                  name="title"
+                  placeholder="Código"
+                  v-model="data.code"
+                  id="code">
+              </div>
+            </div>
+            <div class="col-md-9">
+              <div class="form-group">
+                <label for="name">Nombre</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  maxlength="200"
+                  name="name"
+                  placeholder="Nombre"
+                  v-model="data.name"
+                  id="name"
+                  required="required">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="unit">Unidad</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  maxlength="15"
+                  name="unit"
+                  placeholder="Unidad"
+                  v-model="data.unit"
+                  id="unit">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label>Moneda</label>
+                <select 
+                  id="currency"
+                  name="currency"
+                  class="form-control"
+                  v-model="data.currency"
+                  required="required">
+                  <option value="D">Dólares</option>
+                  <option value="S">Soles</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="cost">Costo</label>
+                <input 
+                  type="number"
+                  class="form-control"
+                  name="cost"
+                  step="0.01"
+                  placeholder="Costo"
+                  id="cost"
+                  v-model="data.cost">
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-link" data-target="#optionalDataEdit" type="button" data-toggle="collapse" aria-expanded="false" aria-controls="optionalData">Opcionales</button>
+          <div class="collapse optional" id=optionalDataEdit>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="cost">Detalle</label>
+                  <textarea 
+                    rows="4"
+                    class="form-control"
+                    name="description"
+                    placeholder="Escriba una descripción"
+                    id="description"
+                    v-model="data.description">
+                  </textarea>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="cost">Categorias</label>
+                  <v-select 
+                    v-model="selectedCategory" 
+                    :options="categoriesData" 
+                    label="name">
+                  </v-select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+      </form>
+
+    </div>
+  </div>
+</div>

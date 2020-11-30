@@ -1,0 +1,58 @@
+    <div class="modal fade" id="formImportXMLModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Importar MS Project XML</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+          <form v-on:submit.prevent="importTasksXML" enctype="multipart/form-data">
+            <div class="modal-body">
+              <div v-if="errors.length" class="alert alert-warning" role="alert">
+                  <b>Por favor corrija los siguientes errores:</b>
+                  <ul>
+                    <li v-for="error in errors">
+                      <ul>
+                        <li v-for="[key, value] in Object.entries(error)">
+                          ${key}: ${value[0]}
+                        </li>
+                      </ul>
+                    </li>
+                  </ul>
+              </div>
+              <div class="form-group">
+                <label for="name">Archivo</label>
+                <input
+                  type="file"
+                  id="fileXML"
+                  accept=".xml"
+                  class="form-control-file"
+                  name="fileXML"
+                  required="required">
+              </div>
+              <div class="form-group">
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="actionImport" id="actionImport1" value="delete" checked>
+                  <label class="form-check-label" for="actionImport1">
+                    Borrar las tareas existentes
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="actionImport" id="actionImport2" value="merge">
+                  <label class="form-check-label" for="actionImport2">
+                    Mantener las tareas existentes
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-primary">Importar</button>
+            </div>
+          </form>
+        </div>
+        </div>
+      </div>
+    </div>
